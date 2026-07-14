@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PC do Fraco — Área do Cliente</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+
+:root{
+  --bg:#0a0a0a;
+  --bg2:#111111;
+  --text:#f0f0f0;
+  --text-dim:rgba(240,240,240,0.38);
+  --text-mid:rgba(240,240,240,0.62);
+  --blue:#3b9eff;
+  --blue-glow:rgba(59,158,255,0.22);
+  --green:#4ade80;
+  --green-glow:rgba(74,222,128,0.2);
+  --glass:rgba(255,255,255,0.032);
+  --glass-b:rgba(255,255,255,0.07);
+  --f:'Inter',sans-serif;
+  --mono:'JetBrains Mono',monospace;
+}
+
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:var(--f);
+  overflow-x:hidden;
+  min-height:100vh;
+  -webkit-font-smoothing:antialiased;
+}
+
+/* NOISE */
+body::after{
+  content:'';position:fixed;inset:0;
+  background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+  pointer-events:none;z-index:9999;opacity:0.5;
+}
+
+/* SPHERES */
+.spheres{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+.sphere{
+  position:absolute;border-radius:50%;
+  background:radial-gradient(circle at 35% 35%,#2a2a2a,#0d0d0d 60%,#080808);
+  box-shadow:inset -4px -4px 12px rgba(255,255,255,0.04),inset 4px 4px 12px rgba(0,0,0,0.8),0 8px 32px rgba(0,0,0,0.6);
+  animation:sphereFloat linear infinite;
+}
+.s1{width:180px;height:180px;top:8%;right:10%;animation-duration:18s}
+.s2{width:90px;height:90px;top:42%;right:32%;animation-duration:14s;animation-delay:-5s;opacity:.7}
+.s3{width:140px;height:140px;bottom:10%;left:4%;animation-duration:20s;animation-delay:-9s;opacity:.75}
+@keyframes sphereFloat{
+  0%{transform:translateY(0) translateX(0)}
+  25%{transform:translateY(-18px) translateX(8px)}
+  50%{transform:translateY(-8px) translateX(-10px)}
+  75%{transform:translateY(-22px) translateX(5px)}
+  100%{transform:translateY(0) translateX(0)}
+}
+
+/* SCROLL BAR */
+#scroll-bar{
+  position:fixed;top:0;left:0;height:2px;
+  background:linear-gradient(90deg,var(--blue),#80d0ff);
+  z-index:9999;width:0%;
+  box-shadow:0 0 8px var(--blue-glow);
+  transition:width 0.1s linear;
+}
+
+/* NAV */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  padding:0 6%;height:68px;
+  display:flex;align-items:center;justify-content:space-between;
+  background:rgba(10,10,10,0.75);
+  border-bottom:1px solid rgba(255,255,255,0.04);
+  backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+}
+.nav-logo{display:flex;align-items:center;gap:10px;text-decoration:none}
+.nav-logo img{width:30px;height:30px;border-radius:50%;object-fit:cover;opacity:.9}
+.nav-logo span{font-size:.92rem;font-weight:700;letter-spacing:.06em;color:var(--text);text-transform:uppercase}
+.nav-logo span em{color:var(--blue);font-style:normal}
+.nav-tag{
+  font-size:.66rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--green);
+  background:rgba(74,222,128,0.08);
+  border:1px solid rgba(74,222,128,0.18);
+  padding:4px 10px;border-radius:100px;
+}
+
+/* MAIN WRAPPER */
+.page{
+  position:relative;z-index:1;
+  min-height:100vh;
+  padding:120px 6% 80px;
+  display:flex;flex-direction:column;align-items:center;
+  gap:32px;
+}
+
+/* EYEBROW */
+.eyebrow{
+  display:inline-flex;align-items:center;gap:8px;
+  font-size:.72rem;font-weight:500;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--text-dim);
+  animation:fadeUp .7s ease both;
+}
+.edot{width:5px;height:5px;border-radius:50%;background:var(--green);animation:blink 2.5s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
+
+/* PAGE TITLE */
+.page-title{
+  font-size:clamp(2.2rem,5vw,3.8rem);
+  font-weight:800;
+  letter-spacing:-.03em;
+  line-height:1.05;
+  text-align:center;
+  animation:fadeUp .7s ease .08s both;
+}
+.page-title .blue{color:var(--blue)}
+.page-sub{
+  font-size:.9rem;font-weight:300;color:var(--text-dim);
+  text-align:center;max-width:420px;line-height:1.75;
+  animation:fadeUp .7s ease .15s both;
+}
+
+/* STEP CARDS WRAPPER */
+.steps{
+  width:100%;max-width:780px;
+  display:flex;flex-direction:column;gap:20px;
+  animation:fadeUp .7s ease .22s both;
+}
+
+/* STEP CARD */
+.step-card{
+  background:rgba(255,255,255,0.032);
+  backdrop-filter:blur(32px) saturate(180%);
+  -webkit-backdrop-filter:blur(32px) saturate(180%);
+  border-radius:22px;
+  padding:36px 40px;
+  position:relative;overflow:hidden;
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,0.07),
+    inset 0 1px 0 rgba(255,255,255,0.1),
+    inset 0 -1px 0 rgba(255,255,255,0.03),
+    0 8px 40px rgba(0,0,0,0.5);
+  transition:transform .35s ease, box-shadow .35s ease;
+}
+.step-card:hover{transform:translateY(-3px)}
+.step-card.blue-card{
+  box-shadow:
+    0 0 0 1px rgba(59,158,255,0.12),
+    inset 0 1px 0 rgba(255,255,255,0.1),
+    0 8px 40px rgba(0,0,0,0.5),
+    0 0 40px rgba(59,158,255,0.06);
+}
+.step-card.blue-card:hover{
+  box-shadow:
+    0 0 0 1px rgba(59,158,255,0.22),
+    inset 0 1px 0 rgba(255,255,255,0.12),
+    0 20px 60px rgba(0,0,0,0.6),
+    0 0 60px rgba(59,158,255,0.1);
+}
+
+/* top accent line */
+.step-card::before{
+  content:'';position:absolute;top:0;left:15%;right:15%;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(59,158,255,0.5),transparent);
+}
+
+/* STEP NUMBER */
+.step-num{
+  display:inline-flex;align-items:center;gap:8px;
+  font-size:.66rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--blue);margin-bottom:16px;
+}
+.step-num-circle{
+  width:20px;height:20px;border-radius:50%;
+  background:rgba(59,158,255,0.12);
+  border:1px solid rgba(59,158,255,0.25);
+  display:flex;align-items:center;justify-content:center;
+  font-size:.6rem;font-weight:700;color:var(--blue);
+}
+.step-title{
+  font-size:1.25rem;font-weight:700;letter-spacing:-.02em;
+  margin-bottom:8px;
+}
+.step-desc{
+  font-size:.82rem;font-weight:300;color:var(--text-dim);
+  line-height:1.7;margin-bottom:28px;
+}
+
+/* DOWNLOAD BTN */
+.btn-dl{
+  display:inline-flex;align-items:center;gap:10px;
+  padding:14px 32px;border-radius:100px;
+  font-size:.8rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;
+  text-decoration:none;color:var(--text);cursor:pointer;border:none;
+  position:relative;overflow:hidden;
+  background:rgba(59,158,255,0.14);
+  border:1px solid rgba(59,158,255,0.28);
+  backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  box-shadow:inset 1px 1px 1px rgba(255,255,255,0.1),0 0 20px var(--blue-glow),0 4px 20px rgba(0,0,0,.3);
+  transition:all .25s;
+}
+.btn-dl::before{
+  content:'';position:absolute;top:0;left:8%;right:8%;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.35),transparent);
+}
+.btn-dl span{position:relative;z-index:1}
+.btn-dl:hover{transform:translateY(-2px);filter:brightness(1.18);box-shadow:inset 1px 1px 1px rgba(255,255,255,.12),0 0 36px var(--blue-glow),0 8px 28px rgba(0,0,0,.4)}
+.btn-dl:active{transform:translateY(1px);filter:brightness(.9)}
+
+/* DL ICON */
+.dl-icon{
+  width:20px;height:20px;
+  display:flex;align-items:center;justify-content:center;
+  position:relative;z-index:1;
+}
+
+/* KEY GENERATOR */
+.key-form{display:flex;flex-direction:column;gap:16px}
+
+.input-wrap{display:flex;flex-direction:column;gap:6px}
+.input-label{
+  font-size:.68rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase;
+  color:var(--text-dim);
+}
+.id-input{
+  background:rgba(255,255,255,0.04);
+  border:1px solid rgba(255,255,255,0.09);
+  border-radius:12px;
+  padding:14px 18px;
+  font-family:var(--mono);
+  font-size:.9rem;
+  color:var(--text);
+  letter-spacing:.06em;
+  outline:none;
+  transition:border-color .2s, box-shadow .2s;
+  width:100%;
+}
+.id-input::placeholder{color:rgba(240,240,240,.2)}
+.id-input:focus{
+  border-color:rgba(59,158,255,.35);
+  box-shadow:0 0 0 3px rgba(59,158,255,.08);
+}
+.id-input.error{
+  border-color:rgba(255,68,85,.35);
+  box-shadow:0 0 0 3px rgba(255,68,85,.08);
+}
+.id-counter{
+  font-size:.65rem;color:var(--text-dim);
+  text-align:right;font-family:var(--mono);
+  transition:color .2s;
+}
+.id-counter.full{color:var(--green)}
+.id-counter.over{color:#ff4455}
+
+/* GENERATE BTN */
+.btn-gen{
+  display:flex;align-items:center;justify-content:center;gap:10px;
+  width:100%;padding:15px;border-radius:12px;
+  font-size:.8rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;
+  cursor:pointer;border:none;color:var(--text);
+  position:relative;overflow:hidden;
+  background:rgba(74,222,128,0.1);
+  border:1px solid rgba(74,222,128,0.22);
+  backdrop-filter:blur(16px);
+  box-shadow:inset 1px 1px 1px rgba(255,255,255,.08),0 0 18px rgba(74,222,128,.12),0 4px 20px rgba(0,0,0,.3);
+  transition:all .25s;
+}
+.btn-gen::before{
+  content:'';position:absolute;top:0;left:8%;right:8%;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.3),transparent);
+}
+.btn-gen span{position:relative;z-index:1}
+.btn-gen:hover:not(:disabled){transform:translateY(-2px);filter:brightness(1.18);box-shadow:inset 1px 1px 1px rgba(255,255,255,.1),0 0 32px rgba(74,222,128,.2),0 8px 28px rgba(0,0,0,.4)}
+.btn-gen:active:not(:disabled){transform:translateY(1px);filter:brightness(.9)}
+.btn-gen:disabled{opacity:.35;cursor:not-allowed}
+
+/* KEY RESULT */
+.key-result{
+  display:none;
+  flex-direction:column;gap:10px;
+  padding:22px 24px;
+  background:rgba(74,222,128,0.04);
+  border:1px solid rgba(74,222,128,0.15);
+  border-radius:14px;
+  position:relative;overflow:hidden;
+}
+.key-result::before{
+  content:'';position:absolute;top:0;left:10%;right:10%;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(74,222,128,.4),transparent);
+}
+.key-result.visible{display:flex}
+.key-result-label{
+  font-size:.65rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--green);
+}
+.key-value{
+  font-family:var(--mono);
+  font-size:1.1rem;
+  font-weight:600;
+  letter-spacing:.08em;
+  color:var(--text);
+  word-break:break-all;
+  line-height:1.5;
+}
+.key-value .seg{color:var(--text)}
+.key-value .sep{color:var(--blue);font-weight:700}
+
+.copy-row{display:flex;align-items:center;gap:10px;margin-top:4px}
+.btn-copy{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:8px 18px;border-radius:8px;
+  font-size:.7rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;
+  cursor:pointer;border:none;color:var(--text);
+  background:rgba(255,255,255,0.06);
+  border:1px solid rgba(255,255,255,.1);
+  backdrop-filter:blur(12px);
+  transition:all .2s;
+}
+.btn-copy:hover{background:rgba(255,255,255,.1);transform:translateY(-1px)}
+.copy-hint{font-size:.7rem;color:var(--text-dim);font-weight:300}
+.copy-hint.ok{color:var(--green)}
+
+/* ERROR MSG */
+.err-msg{
+  display:none;font-size:.76rem;color:#ff4455;
+  background:rgba(255,68,85,.06);border:1px solid rgba(255,68,85,.15);
+  border-radius:8px;padding:10px 14px;
+  animation:fadeUp .3s ease;
+}
+.err-msg.visible{display:block}
+
+/* INFO STRIP */
+.info-strip{
+  display:flex;align-items:center;gap:8px;
+  padding:12px 16px;
+  background:rgba(255,255,255,.03);
+  border:1px solid rgba(255,255,255,.06);
+  border-radius:10px;
+  font-size:.74rem;color:var(--text-dim);
+  font-weight:300;line-height:1.5;
+}
+.info-strip svg{flex-shrink:0;opacity:.5}
+
+/* HOW-TO STEPS */
+.how-steps{
+  display:flex;flex-direction:column;gap:10px;
+  margin-bottom:8px;
+}
+.how-step{
+  display:flex;align-items:flex-start;gap:14px;
+  font-size:.82rem;color:var(--text-mid);line-height:1.6;
+}
+.how-step-n{
+  flex-shrink:0;
+  width:22px;height:22px;border-radius:50%;
+  background:rgba(59,158,255,.1);
+  border:1px solid rgba(59,158,255,.2);
+  display:flex;align-items:center;justify-content:center;
+  font-size:.62rem;font-weight:700;color:var(--blue);
+  margin-top:2px;
+}
+
+/* FOOTER */
+footer{
+  position:relative;z-index:1;
+  padding:24px 6%;
+  border-top:1px solid rgba(255,255,255,.04);
+  display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;
+}
+.foot-brand{display:flex;align-items:center;gap:8px;font-size:.8rem;font-weight:700;color:var(--text-mid);letter-spacing:.08em;text-transform:uppercase}
+.foot-brand img{width:22px;height:22px;border-radius:50%;border:1px solid rgba(255,255,255,.08)}
+.foot-copy{font-size:.7rem;color:var(--text-dim);font-weight:300}
+
+/* ANIMATIONS */
+@keyframes fadeUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+
+/* SCROLLBAR */
+::-webkit-scrollbar{width:3px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:rgba(255,255,255,.1);border-radius:2px}
+
+/* RESPONSIVE */
+@media(max-width:600px){
+  .page{padding:100px 4% 60px}
+  .step-card{padding:28px 22px}
+  .page-title{font-size:2rem}
+}
+</style>
+</head>
+<body>
+
+<div id="scroll-bar"></div>
+
+<div class="spheres">
+  <div class="sphere s1"></div>
+  <div class="sphere s2"></div>
+  <div class="sphere s3"></div>
+</div>
+
+<!-- NAV -->
+<nav>
+  <a href="#" class="nav-logo">
+    <img src="logo.png" alt="Logo" onerror="this.style.display='none'">
+    <span>PC DO <em>FRACO</em></span>
+  </a>
+  <span class="nav-tag">Área do Cliente</span>
+</nav>
+
+<!-- MAIN -->
+<main class="page">
+
+  <div class="eyebrow"><span class="edot"></span>Entrega do produto</div>
+
+  <h1 class="page-title">Bem-vindo,<br><span class="blue">configure seu app.</span></h1>
+  <p class="page-sub">Siga os passos abaixo para baixar o aplicativo e gerar sua chave de ativação.</p>
+
+  <div class="steps">
+
+    <!-- STEP 1: DOWNLOAD -->
+    <div class="step-card blue-card">
+      <div class="step-num">
+        <div class="step-num-circle">1</div>
+        Passo 1
+      </div>
+      <h2 class="step-title">Baixe o Aplicativo</h2>
+      <p class="step-desc">Faça o download do app de otimização. Após instalar, abra-o para encontrar seu <strong>ID de ativação</strong> — você vai precisar dele no próximo passo.</p>
+
+      <div class="how-steps">
+        <div class="how-step">
+          <div class="how-step-n">→</div>
+          <span>Baixe e execute o instalador abaixo.</span>
+        </div>
+        <div class="how-step">
+          <div class="how-step-n">→</div>
+          <span>Abra o app. Na tela inicial, você verá seu <strong>ID</strong> com 16 caracteres.</span>
+        </div>
+        <div class="how-step">
+          <div class="how-step-n">→</div>
+          <span>Copie esse ID e vá para o Passo 2.</span>
+        </div>
+      </div>
+
+      <!-- TROQUE O href PELO LINK DO MEDIAFIRE -->
+      <a href="SEU_LINK_DO_MEDIAFIRE_AQUI" target="_blank" class="btn-dl">
+        <span class="dl-icon">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path d="M8 1v9M8 10l-3-3M8 10l3-3M2 13h12" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
+        <span>Baixar App — PC do Fraco</span>
+      </a>
+    </div>
+
+    <!-- STEP 2: KEY GENERATOR -->
+    <div class="step-card">
+      <div class="step-num">
+        <div class="step-num-circle">2</div>
+        Passo 2
+      </div>
+      <h2 class="step-title">Gere sua Key de Ativação</h2>
+      <p class="step-desc">Cole o ID de 16 caracteres que aparece no app e clique em gerar. Sua chave ficará pronta para copiar e colar diretamente no aplicativo.</p>
+
+      <div class="key-form">
+        <div class="input-wrap">
+          <label class="input-label" for="id-input">Seu ID (16 caracteres)</label>
+          <input
+            id="id-input"
+            class="id-input"
+            type="text"
+            maxlength="16"
+            placeholder="Cole seu ID aqui..."
+            autocomplete="off"
+            autocorrect="off"
+            autocapitalize="off"
+            spellcheck="false"
+          >
+          <span class="id-counter" id="id-counter">0 / 16</span>
+        </div>
+
+        <div class="err-msg" id="err-msg">
+          O ID precisa ter exatamente <strong>16 caracteres</strong>. Verifique e tente novamente.
+        </div>
+
+        <button class="btn-gen" id="btn-gen" disabled>
+          <span>⚡ Gerar Minha Key</span>
+        </button>
+
+        <div class="key-result" id="key-result">
+          <span class="key-result-label">✓ Sua chave de ativação</span>
+          <div class="key-value" id="key-value"></div>
+          <div class="copy-row">
+            <button class="btn-copy" id="btn-copy">
+              <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><rect x="4" y="4" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.4"/><path d="M3 8H2a1 1 0 01-1-1V2a1 1 0 011-1h5a1 1 0 011 1v1" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+              Copiar
+            </button>
+            <span class="copy-hint" id="copy-hint">Cole essa key no campo do app</span>
+          </div>
+        </div>
+
+        <div class="info-strip">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="6" stroke="currentColor" stroke-width="1.4"/><path d="M7 6.3V10M7 4.5v.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+          Cada ID gera uma key única. Não compartilhe sua key com outras pessoas.
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /steps -->
+
+</main>
+
+<!-- FOOTER -->
+<footer>
+  <div class="foot-brand">
+    <img src="logo.png" alt="Logo" onerror="this.style.display='none'">
+    PC DO <span style="color:var(--blue);margin-left:4px">FRACO</span>
+  </div>
+  <span class="foot-copy">Área exclusiva para clientes · Não compartilhe este link</span>
+</footer>
+
+<script>
+/* ── SCROLL BAR ── */
+const scrollBar = document.getElementById('scroll-bar');
+window.addEventListener('scroll', () => {
+  const pct = window.scrollY / (document.body.scrollHeight - window.innerHeight) * 100;
+  scrollBar.style.width = Math.min(pct, 100) + '%';
+}, {passive: true});
+
+/* ── KEY GENERATOR ── */
+const input    = document.getElementById('id-input');
+const counter  = document.getElementById('id-counter');
+const btnGen   = document.getElementById('btn-gen');
+const errMsg   = document.getElementById('err-msg');
+const keyResult = document.getElementById('key-result');
+const keyValue = document.getElementById('key-value');
+const btnCopy  = document.getElementById('btn-copy');
+const copyHint = document.getElementById('copy-hint');
+
+// Update counter while typing
+input.addEventListener('input', () => {
+  const len = input.value.length;
+  counter.textContent = len + ' / 16';
+  counter.className = 'id-counter' + (len === 16 ? ' full' : len > 16 ? ' over' : '');
+  btnGen.disabled = len !== 16;
+
+  // reset result and error on edit
+  keyResult.classList.remove('visible');
+  errMsg.classList.remove('visible');
+  input.classList.remove('error');
+  copyHint.textContent = 'Cole essa key no campo do app';
+  copyHint.classList.remove('ok');
+});
+
+// Generate key algorithm:
+// KEY = ID[0:3] + "X" + ID[3:7] + "Q" + ID[7:11] + "K" + ID[11:16] + "Z"
+function generateKey(id) {
+  return (
+    id.substring(0, 3)  + 'X' +
+    id.substring(3, 7)  + 'Q' +
+    id.substring(7, 11) + 'K' +
+    id.substring(11, 16)+ 'Z'
+  );
+}
+
+// Render key with colored separators
+function renderKey(key) {
+  // segments: 3 chars, X, 4, Q, 4, K, 5, Z
+  const parts = [
+    {text: key.substring(0, 3),  sep: false},
+    {text: 'X',                  sep: true},
+    {text: key.substring(4, 8),  sep: false},
+    {text: 'Q',                  sep: true},
+    {text: key.substring(9, 13), sep: false},
+    {text: 'K',                  sep: true},
+    {text: key.substring(14, 19),sep: false},
+    {text: 'Z',                  sep: true},
+  ];
+  return parts.map(p =>
+    p.sep
+      ? `<span class="sep">${p.text}</span>`
+      : `<span class="seg">${p.text}</span>`
+  ).join('');
+}
+
+btnGen.addEventListener('click', () => {
+  const id = input.value.trim();
+
+  if (id.length !== 16) {
+    errMsg.classList.add('visible');
+    input.classList.add('error');
+    keyResult.classList.remove('visible');
+    return;
+  }
+
+  errMsg.classList.remove('visible');
+  input.classList.remove('error');
+
+  const key = generateKey(id);
+  keyValue.innerHTML = renderKey(key);
+  keyResult.classList.add('visible');
+
+  // Scroll to result smoothly
+  setTimeout(() => keyResult.scrollIntoView({behavior: 'smooth', block: 'nearest'}), 80);
+});
+
+// Copy to clipboard
+btnCopy.addEventListener('click', async () => {
+  const id = input.value.trim();
+  if (id.length !== 16) return;
+
+  const key = generateKey(id);
+  try {
+    await navigator.clipboard.writeText(key);
+    copyHint.textContent = '✓ Copiado!';
+    copyHint.classList.add('ok');
+    setTimeout(() => {
+      copyHint.textContent = 'Cole essa key no campo do app';
+      copyHint.classList.remove('ok');
+    }, 2500);
+  } catch {
+    // fallback
+    const ta = document.createElement('textarea');
+    ta.value = key;
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    copyHint.textContent = '✓ Copiado!';
+    copyHint.classList.add('ok');
+    setTimeout(() => {
+      copyHint.textContent = 'Cole essa key no campo do app';
+      copyHint.classList.remove('ok');
+    }, 2500);
+  }
+});
+
+// Allow Enter key to generate
+input.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !btnGen.disabled) btnGen.click();
+});
+</script>
+</body>
+</html>
